@@ -1,0 +1,128 @@
+common: &default_settings
+  # <Replace this with whatever you have in your NewRelic account>
+  license_key: 'License!!'
+
+  # Use a sensible application name, too
+  app_name: NR-PoC
+
+  # This is the default configuration, nothing really important - You should go to the bottom of the file for the environment info
+  agent_enabled: true
+  high_security: false
+  enable_auto_app_naming: false
+  enable_auto_transaction_naming: true
+  log_level: info
+  audit_mode: false
+  log_file_count: 1
+  log_limit_in_kbytes: 0
+  log_daily: false
+  log_file_name: newrelic_agent.log
+  application_logging:
+    enabled: true
+    forwarding:
+      enabled: true
+    metrics:
+      enabled: true
+
+  code_level_metrics:
+    enabled: false
+
+  max_stack_trace_lines: 30
+  attributes:
+    enabled: true
+
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: apdex_f
+    record_sql: obfuscated
+    log_sql: false
+    stack_trace_threshold: 0.5
+    explain_enabled: true
+    explain_threshold: 0.5
+    top_n: 20
+
+  error_collector:
+    enabled: true
+    ignore_classes:
+      - "akka.actor.ActorKilledException"
+    ignore_status_codes: 404
+
+  transaction_events:
+    enabled: true
+    max_samples_stored: 2000
+
+  distributed_tracing:
+    enabled: true
+    exclude_newrelic_header: false
+
+  span_events:
+    enabled: true
+    max_samples_stored: 2000
+    attributes:
+      enabled: true
+
+  thread_profiler:
+    enabled: true
+
+  browser_monitoring:
+    auto_instrument: true
+
+  class_transformer:
+    com.newrelic.instrumentation.servlet-user:
+      enabled: false
+
+    com.newrelic.instrumentation.spring-aop-2:
+      enabled: false
+
+    com.newrelic.instrumentation.jdbc-resultset:
+      enabled: false
+
+    classloader_excludes:
+      groovy.lang.GroovyClassLoader$InnerLoader,
+      org.codehaus.groovy.runtime.callsite.CallSiteClassLoader,
+      com.collaxa.cube.engine.deployment.BPELClassLoader,
+      org.springframework.data.convert.ClassGeneratingEntityInstantiator$ObjectInstantiatorClassGenerator,
+      org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer$ContextClassLoader,
+      gw.internal.gosu.compiler.SingleServingGosuClassLoader,
+
+  # Real-time profiling using Java Flight Recorder (JFR).
+  # This feature reports dimensional metrics to the ingest endpoint configured by
+  # metric_ingest_uri and events to the ingest endpoint configured by event_ingest_uri.
+  # Both ingest endpoints default to US production but they will be automatically set to EU
+  # production when using an EU license key. Other ingest endpoints can be configured manually.
+  # Requires a JVM that provides the JFR library.
+  jfr:
+    enabled: false
+    audit_logging: false
+
+  labels:
+
+    # An example label
+    #label_name: label_value
+
+
+# Application Environments
+# ------------------------------------------
+# Environment specific settings are in this section.
+# You can use the environment to override the default settings.
+# For example, to change the app_name setting.
+# Use -Dnewrelic.environment=<environment> on the Java startup command line
+# to set the environment.
+# The default environment is production.
+
+# NOTE if your application has other named environments, you should
+# provide configuration settings for these environments here.
+
+development:
+  <<: *default_settings
+  app_name: NR-PoC (Development)
+
+test:
+  <<: *default_settings
+  app_name: NR-PoC (Test)
+
+production:
+  <<: *default_settings
+
+staging:
+  <<: *default_settings
+  app_name: NR-PoC (Staging)
