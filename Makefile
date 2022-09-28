@@ -23,4 +23,14 @@ run-newrelic-docker:
 docker: build
 	docker build -t poc/nr-example .
 
+
+tf-plan:
+	cd infra && \
+	terraform plan -var-file="vars/$(env).tfvars"
+
+tf-apply:
+	cd infra && \
+	terraform apply -var-file="vars/$(env).tfvars" --auto-approve
+
+
 .PHONY: test run build docker

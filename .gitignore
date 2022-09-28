@@ -4,3 +4,6 @@
 /.lsp
 /.nrepl-port
 /target
+.terraform
+.terraform.lock.hcl
+terraform.tfstate.backup
