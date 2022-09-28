@@ -1,3 +1,4 @@
+## Policy
 resource "newrelic_alert_policy" "alert_policy" {
   name = "PDF processing - Too many documents failing"
 }
@@ -18,7 +19,6 @@ resource "newrelic_nrql_alert_condition" "alert_condition" {
   expiration_duration            = 1 /*minute*/ * 60 /*seconds*/
   open_violation_on_expiration   = false
   close_violations_on_expiration = false
-  value_function                 = "single_value"
 
   nrql {
     query = "SELECT count(*) FROM PoCCustomEvent"
@@ -41,19 +41,47 @@ resource "newrelic_nrql_alert_condition" "alert_condition" {
 
 
 # Creates an email alert channel.
-resource "newrelic_alert_channel" "emailing" {
-  name = "Notification via email"
-  type = "email"
+resource "newrelic_notification_destination" "email_destination" {
+  name = "PDF Processing destination email"
+  type = "EMAIL"
 
-  config {
-    recipients              = var.email_recipient
-    include_json_attachment = "false"
+  property {
+    key   = "email"
+    value = var.email_recipient
   }
 }
 
-resource "newrelic_alert_policy_channel" "foo" {
-  policy_id = newrelic_alert_policy.alert_policy.id
-  channel_ids = [
-    newrelic_alert_channel.emailing.id
-  ]
+resource "newrelic_notification_channel" "email_channel" {
+  name           = "PDF Processing destination"
+  type           = "EMAIL"
+  destination_id = newrelic_notification_destination.email_destination.id
+  product        = "IINT" # IINT is Workflows
+
+  property {
+    key   = "subject"
+    value = "PDF Processing error"
+  }
+}
+
+resource "newrelic_workflow" "alert_workflow" {
+  name                  = "PDF Processing Workflow"
+  enrichments_enabled   = true
+  destinations_enabled  = true
+  enabled               = true
+  muting_rules_handling = "NOTIFY_ALL_ISSUES"
+
+  issues_filter {
+    name = "filter-name"
+    type = "FILTER"
+
+    predicate {
+      attribute = "labels.policyIds"
+      operator  = "EXACTLY_MATCHES"
+      values    = [split(":", newrelic_nrql_alert_condition.alert_condition.id)[0]]
+    }
+  }
+
+  destination {
+    channel_id = newrelic_notification_channel.email_channel.id
+  }
 }
