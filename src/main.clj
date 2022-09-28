@@ -1,19 +1,16 @@
 (ns main
   (:gen-class)
-  (:import (com.newrelic.api.agent NewRelic)))
+  (:require [monitoring.newrelic :as nr]))
 
-(defn- record-event [data-to-record]
+(defn- record-batch-of-events []
   (loop [x 1]
     (when (< x 100)
-      (let [data-to-send (assoc data-to-record "iteration" (str x))]
-        (println "Sending>> " data-to-send)
-        (.. (NewRelic/getAgent)
-            (getInsights)
-            (recordCustomEvent "MyCustomEvent" data-to-send))
-        (Thread/sleep 2000)
-        (recur (inc x))))))
+      (println "Running iteration >> " x)
+      (nr/record-event {:name "some-event",
+                        :data (str "Executed the " x "th time")})
+      (Thread/sleep 2000)
+      (recur (inc x)))))
 
 (defn -main []
-  (println "Hello, World!")
-  (record-event {"name" "some-event", "data" "Greetings!"})
-  (Thread/sleep 20000))
+  (println "Hello, World, let's get started!")
+  (record-batch-of-events))
